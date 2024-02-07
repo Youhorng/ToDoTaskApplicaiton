@@ -39,14 +39,30 @@ class LinkedList:
             tasks.append(current.data)
             current = current.next
 
-        return tasks
+        return tasks[::-1]
+
+# Define a session state class to store the linked list
+class _SessionState:
+    def __init__(self):
+        self._task_list = LinkedList()
+
+    def get_task_list(self):
+        return self._task_list
+
+def get_session_state():
+    if not hasattr(st, '_session_state'): # Check if the session state has been set
+        st._session_state = _SessionState() # If not, set the session state
+    return st._session_state
 
 # Create a Streamlit app
 def main():
     st.title("To-Do List App with Linked List")
 
-    # Initialize a linked list
-    tasks_list = LinkedList()
+    # Get the session state
+    session_state = get_session_state()
+
+    # Get the linked list from the session state
+    tasks_list = session_state.get_task_list()
 
     # Sidebar for adding tasks
     task_input = st.sidebar.text_input("Add Task:")
@@ -60,15 +76,17 @@ def main():
         if task_to_remove:
             tasks_list.remove_task(task_to_remove)
 
-    # Main content to display tasks
-    st.write("## Your To-Do List:")
-    tasks = tasks_list.display_tasks()
+    # Sidebar for viewing tasks
+    if st.sidebar.button("View Tasks"):
+        # Main content to display tasks
+        st.write("## Your To-Do List:")
+        tasks = tasks_list.display_tasks()
 
-    if not tasks:
-        st.write("No tasks yet. Add some tasks using the sidebar!")
+        if not tasks:
+            st.write("No tasks yet. Add some tasks using the sidebar!")
 
-    for i, task in enumerate(tasks, start=1):
-        st.write(f"{i}. {task}")
+        for i, task in enumerate(tasks, start=1):
+            st.write(f"{i}. {task}")
 
 if __name__ == "__main__":
     main()
